@@ -1,33 +1,12 @@
 require 'pry'
 require 'csv'
 
-#arr_medium = CSV.read("medium.csv", converters: :numeric)
-#
-# PUZZLES = {
-#   medium: arr_medium,
+arr_medium = CSV.read("lib/medium.csv", converters: :numeric)
+arr_done = CSV.read("lib/done.csv", converters: :numeric)
+
 PUZZLES = {
-  medium: [
-    [6, 0, 9, 0, 0, 8, 3, 0, 2],
-    [0, 5, 0, 6, 2, 0, 7, 0, 0],
-    [0, 0, 7, 9, 0, 0, 0, 0, 0],
-    [5, 0, 0, 0, 1, 0, 2, 6, 0],
-    [0, 6, 0, 0, 0, 5, 0, 0, 0],
-    [7, 0, 0, 0, 0, 2, 0, 0, 0],
-    [9, 7, 6, 0, 0, 0, 0, 0, 1],
-    [4, 1, 5, 0, 0, 0, 6, 3, 7],
-    [2, 0, 0, 0, 0, 0, 5, 9, 4]
-  ],
-  done: [
-    [3, 6, 7, 4, 2, 9, 1, 5, 8],
-    [8, 2, 4, 5, 6, 1, 7, 9, 3],
-    [5, 9, 1, 8, 3, 7, 4, 2, 6],
-    [7, 3, 9, 6, 5, 8, 2, 1, 4],
-    [6, 4, 8, 1, 7, 2, 9, 3, 5],
-    [1, 5, 2, 3, 9, 4, 8, 6, 7],
-    [4, 1, 6, 9, 8, 3, 5, 7, 2],
-    [2, 8, 3, 7, 1, 5, 6, 4, 9],
-    [9, 7, 5, 2, 4, 6, 3, 8, 1]
-  ]
+  medium: arr_medium,
+  done: arr_done
 }
 
 class Grid
