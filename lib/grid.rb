@@ -11,6 +11,17 @@ PUZZLES = {
     [9, 7, 6, 0, 0, 0, 0, 0, 1],
     [4, 1, 5, 0, 0, 0, 6, 3, 7],
     [2, 0, 0, 0, 0, 0, 5, 9, 4]
+  ],
+  done: [
+    [3, 6, 7, 4, 2, 9, 1, 5, 8],
+    [8, 2, 4, 5, 6, 1, 7, 9, 3],
+    [5, 9, 1, 8, 3, 7, 4, 2, 6],
+    [7, 3, 9, 6, 5, 8, 2, 1, 4],
+    [6, 4, 8, 1, 7, 2, 9, 3, 5],
+    [1, 5, 2, 3, 9, 4, 8, 6, 7],
+    [4, 1, 6, 9, 8, 3, 5, 7, 2],
+    [2, 8, 3, 7, 1, 5, 6, 4, 9],
+    [9, 7, 5, 2, 4, 6, 3, 8, 1]
   ]
 }
 
@@ -94,6 +105,7 @@ class Subgrid
 end
 
 class Cell
+  attr_reader :rows, :value
   attr_writer :value
   def initialize(value)
     @value = value
@@ -101,4 +113,5 @@ class Cell
 end
 
 grid = Grid.new(PUZZLES[:medium])
-binding.pry
+
+#binding.pry
