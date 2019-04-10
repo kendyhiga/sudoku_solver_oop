@@ -1,5 +1,10 @@
 require 'pry'
+require 'csv'
 
+#arr_medium = CSV.read("medium.csv", converters: :numeric)
+#
+# PUZZLES = {
+#   medium: arr_medium,
 PUZZLES = {
   medium: [
     [6, 0, 9, 0, 0, 8, 3, 0, 2],
