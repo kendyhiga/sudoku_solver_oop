@@ -40,22 +40,14 @@ class Grid
   end
 
   def parse_subgrid
-    start = 0
-    limit = 2
-    3.times do |index|
-      temp_subgrid1 = []
-      temp_subgrid2 = []
-      temp_subgrid3 = []
-      @rows[start..limit].each do |row|
-        temp_subgrid1 << row.cells[0..2]
-        temp_subgrid2 << row.cells[3..5]
-        temp_subgrid3 << row.cells[6..8]
+    (0..8).step(3) do |horizontal_start, horizontal_end = (horizontal_start + 2 )|
+      (0..8).step(3) do |vertical_start, vertical_end = (vertical_start + 2 )|
+        temp_subgrid = []
+        @rows[horizontal_start..horizontal_end].each do |row|
+          temp_subgrid << row.cells[vertical_start..vertical_end]
+        end
+        @subgrids << Subgrid.new(temp_subgrid)
       end
-      @subgrids << Subgrid.new(temp_subgrid1)
-      @subgrids << Subgrid.new(temp_subgrid2)
-      @subgrids << Subgrid.new(temp_subgrid3)
-      start += 3
-      limit += 3
     end
   end
 end
@@ -98,4 +90,4 @@ end
 
 grid = Grid.new(PUZZLES[:medium])
 
-#binding.pry
+binding.pry
