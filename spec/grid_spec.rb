@@ -1,8 +1,8 @@
 require 'grid'
 
 describe Grid do
-  grid = Grid.new(PUZZLES[:done])
-  # grid = Grid.new(PUZZLES[:medium])
+  read_from_csv
+  grid = Grid.new(@puzzles[:game])
   it 'has 9 rows' do
     expect(grid.rows.size).to eq(9)
   end

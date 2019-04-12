@@ -1,13 +1,33 @@
-require 'pry'
 require 'csv'
+require 'pry'
 
-arr_medium = CSV.read('lib/medium.csv', converters: :numeric)
-arr_done = CSV.read('lib/done.csv', converters: :numeric)
+def read_from_csv
+  print 'medium or done: '
+  @difficulty = gets.chomp
+  parsed_csv = CSV.read("lib/#{@difficulty}.csv", converters: :numeric)
+  @puzzles = {game: parsed_csv}
+end
 
-PUZZLES = {
-  medium: arr_medium,
-  done: arr_done
-}
+def write_to_csv(grid)
+  CSV.open("lib/#{@difficulty}_done.csv", "wb") do |csv|
+    (0...9).each do |each_row|
+      arr = []
+      (0...9).each do |each_cell|
+        arr << grid.rows[each_row].cells[each_cell].value
+      end
+      csv << arr
+    end
+  end
+end
+
+def sudoku_solver(grid)
+  #coming soon
+  grid
+end
+
+def missing_numbers(known_numbers_array)
+  [1,2,3,4,5,6,7,8,9] - known_numbers_array
+end
 
 class Grid
   attr_reader :cells, :rows, :columns, :subgrids
@@ -50,6 +70,7 @@ class Grid
       end
     end
   end
+
 end
 
 class Row
@@ -88,4 +109,8 @@ class Cell
   end
 end
 
-Grid.new(PUZZLES[:medium])
+read_from_csv
+grid = Grid.new(@puzzles[:game])
+
+solved = sudoku_solver(grid)
+write_to_csv(solved)
