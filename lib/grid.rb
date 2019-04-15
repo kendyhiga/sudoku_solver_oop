@@ -1,32 +1,108 @@
 require 'csv'
 require 'pry'
 
-def read_from_csv
-  print 'medium or done: '
-  @difficulty = gets.chomp
-  parsed_csv = CSV.read("lib/#{@difficulty}.csv", converters: :numeric)
-  @puzzles = {game: parsed_csv}
-end
+class SudokuSolver
+  attr_reader :grid
+  def initialize
+    read_from_csv
+    @grid = Grid.new(@puzzles[:game])
+    solve
+    write_to_csv
+  end
 
-def write_to_csv(grid)
-  CSV.open("lib/#{@difficulty}_done.csv", "wb") do |csv|
-    (0...9).each do |each_row|
-      arr = []
-      (0...9).each do |each_cell|
-        arr << grid.rows[each_row].cells[each_cell].value
+  def read_from_csv
+    print 'easy, medium or done: '
+    @difficulty = gets.chomp
+    parsed_csv = CSV.read("lib/#{@difficulty}.csv", converters: :numeric)
+    @puzzles = {game: parsed_csv}
+  end
+
+  def solve
+    while not done?
+      (0...9).each do |each_row|
+        array = convert_row_to_array(each_row)
+        array_zeroes = find_all_zeroes(array)
+        array_zeroes.each do |zero|
+          self.grid.rows[each_row].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
+          # only_one_valid_option
+        end
       end
-      csv << arr
+      (0...9).each do |each_column|
+        array = convert_column_to_array(each_column)
+        array_zeroes = find_all_zeroes(array)
+        array_zeroes.each do |zero|
+          self.grid.lines[each_column].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
+        end
+      end
+      (0...9).each do |each_subgrid|
+        array = convert_subgrid_to_array(each_subgrid)
+        array_zeroes = find_all_zeroes(array)
+        array_zeroes.each do |zero|
+          self.grid.lines[each_subgrid].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
+        end
+      end
     end
   end
-end
 
-def sudoku_solver(grid)
-  #coming soon
-  grid
-end
+  def convert_row_to_array(index)
+    row_values_in_array = []
+    self.grid.rows[index].cells.each do |cell|
+      row_values_in_array << cell.value
+    end
+    row_values_in_array
+  end
 
-def missing_numbers(known_numbers_array)
-  [1,2,3,4,5,6,7,8,9] - known_numbers_array
+  def convert_column_to_array(index)
+    columns_values_in_array = []
+    self.grid.columns[index].cells.each do |cell|
+      columns_values_in_array << cell.value
+    end
+    columns_values_in_array
+  end
+
+  def convert_subgrid_to_array(index)
+    subgrid_values_in_array = []
+    self.grid.subgrids[index].cells.each do |cell|
+      subgrid_values_in_array << cell.value
+    end
+    subgrid_values_in_array
+  end
+
+  def find_all_zeroes(array)
+    array.each_index.select { |index| array[index]==0 }
+  end
+
+  def missing_numbers(known_numbers_array)
+    [1,2,3,4,5,6,7,8,9] - known_numbers_array
+  end
+
+  def done?
+    (0...9).each do |each_row|
+      array = convert_row_to_array(each_row)
+      return false if (array.uniq.size != array.size) || (array.sum != 45)
+    end
+    (0...9).each do |each_column|
+      array = convert_column_to_array(each_column)
+      return false if array.uniq.size != array.size || (array.sum != 45)
+    end
+    (0...9).each do |each_subgrid|
+      array = convert_subgrid_to_array(each_subgrid)
+      return false if array.uniq.size != array.size || (array.sum != 45)
+    end
+    true
+  end
+
+  def write_to_csv
+    CSV.open("lib/#{@difficulty}_done.csv", "wb") do |csv|
+      (0...9).each do |each_row|
+        arr = []
+        (0...9).each do |each_cell|
+          arr << @grid.rows[each_row].cells[each_cell].value
+        end
+        csv << arr
+      end
+    end
+  end
 end
 
 class Grid
@@ -37,7 +113,6 @@ class Grid
     @rows = []
     @columns = []
     @subgrids = []
-    @cells = []
     parse_rows
     parse_columns
     parse_subgrid
@@ -66,7 +141,7 @@ class Grid
         @rows[horizontal_start..horizontal_end].each do |row|
           temp_subgrid << row.cells[vertical_start..vertical_end]
         end
-        @subgrids << Subgrid.new(temp_subgrid)
+        @subgrids << Subgrid.new(temp_subgrid.flatten)
       end
     end
   end
@@ -109,8 +184,6 @@ class Cell
   end
 end
 
-read_from_csv
-grid = Grid.new(@puzzles[:game])
+solved = SudokuSolver.new
 
-solved = sudoku_solver(grid)
-write_to_csv(solved)
+#binding.pry
