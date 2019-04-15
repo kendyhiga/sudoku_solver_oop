@@ -31,14 +31,14 @@ class SudokuSolver
         array = convert_column_to_array(each_column)
         array_zeroes = find_all_zeroes(array)
         array_zeroes.each do |zero|
-          self.grid.lines[each_column].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
+          self.grid.columns[each_column].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
         end
       end
       (0...9).each do |each_subgrid|
         array = convert_subgrid_to_array(each_subgrid)
         array_zeroes = find_all_zeroes(array)
         array_zeroes.each do |zero|
-          self.grid.lines[each_subgrid].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
+          self.grid.subgrids[each_subgrid].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
         end
       end
     end
