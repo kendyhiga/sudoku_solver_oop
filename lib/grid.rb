@@ -20,6 +20,7 @@ class SudokuSolver
   def solve
     while not done?
       puts "There are still #{remaining_zeros} zero(s) remaining"
+
       check_candidates
       insert_number_if_theres_only_one_option
       break unless is_progressing?
@@ -42,12 +43,23 @@ class SudokuSolver
         cell.candidates = cell.candidates - convert_subgrid_to_array(cell.subgrid)
         insert_number_if_theres_only_one_candidate(cell)
       end
+      binding.pry
     end
   end
 
   def insert_number_if_theres_only_one_candidate(cell)
     cell.value = cell.candidates[0] if cell.candidates.size == 1 && cell.candidates[0] != 0
   end
+
+  def return_array_of_candidates_on_block(block, index)
+    candidates_on_the_block = []
+    eval("grid.#{block}.each do")
+      candidates_on_the_block << eval("grid.#{block}[index_x].cells[index_y].candidates")
+    end
+  end
+
+#  def insert_number_if_theres_only_one_candidate_on_the_block(block)
+#  end
 
   def insert_number_if_theres_only_one_option
     (0...9).each do |each_row|
