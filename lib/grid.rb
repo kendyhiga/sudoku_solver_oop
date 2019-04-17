@@ -19,14 +19,15 @@ class SudokuSolver
 
   def solve
     while not done?
+      puts "There are still #{remaining_zeros} zero(s) remaining"
       check_candidates
       insert_number_if_theres_only_one_option
-      puts "There are still #{remaining_zeros} zero(s) remaining"
       break unless is_progressing?
       check_candidates
 
     end
-    write_to_csv
+    puts "There are #{remaining_zeros} zero(s) remaining"
+    write_to_csv if remaining_zeros == 0
   end
 
   def check_candidates
