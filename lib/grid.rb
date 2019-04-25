@@ -20,7 +20,6 @@ class SudokuSolver
   def solve
     while not done?
       puts "There are still #{remaining_zeros} zero(s) remaining"
-
       check_candidates
       insert_number_if_theres_only_one_option('rows')
       insert_number_if_theres_only_one_option('columns')
@@ -44,7 +43,6 @@ class SudokuSolver
         cell.candidates = cell.candidates - convert_subgrids_to_array(cell.subgrid)
         insert_number_if_theres_only_one_candidate(cell)
       end
-      binding.pry
     end
   end
 
@@ -55,30 +53,11 @@ class SudokuSolver
     end
   end
 
-<<<<<<< HEAD
   def insert_candidate_if_its_the_only_ocurrence(group)
     (0...9).each do |group_index|
       array = []
       (0...9).each do |cell_index|
         eval("array << grid.#{group}[group_index].cells[cell_index].candidates")
-=======
-  def return_array_of_candidates_on_block(block, index)
-    candidates_on_the_block = []
-    eval("grid.#{block}.each do")
-      candidates_on_the_block << eval("grid.#{block}[index_x].cells[index_y].candidates")
-    end
-  end
-
-#  def insert_number_if_theres_only_one_candidate_on_the_block(block)
-#  end
-
-  def insert_number_if_theres_only_one_option
-    (0...9).each do |each_row|
-      array = convert_row_to_array(each_row)
-      array_zeroes = find_all_zeroes(array)
-      array_zeroes.each do |zero|
-        grid.rows[each_row].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
->>>>>>> 556f982dba80091ebfcbd8aafcaa3385e09100a1
       end
       array.flatten!
       certain_candidate = array.detect{ |unique| array.count(unique) == 1 }
