@@ -22,11 +22,31 @@ describe Grid do
     end
   end
 
-  it "doesn't have a line with a repeated number" do
+  it "doesn't have a row with a repeated number" do
     (0...9).each do |each_row|
       arr = []
       (0...9).each do |each_cell|
         arr << solved.grid.rows[each_row].cells[each_cell].value
+      end
+      expect(arr.uniq.size).to eq(arr.size)
+    end
+  end
+
+  it "doesn't have a column with a repeated number" do
+    (0...9).each do |each_column|
+      arr = []
+      (0...9).each do |each_cell|
+        arr << solved.grid.columns[each_column].cells[each_cell].value
+      end
+      expect(arr.uniq.size).to eq(arr.size)
+    end
+  end
+
+  it "doesn't have a subgrid with a repeated number" do
+    (0...9).each do |each_subgrid|
+      arr = []
+      (0...9).each do |each_cell|
+        arr << solved.grid.subgrids[each_subgrid].cells[each_cell].value
       end
       expect(arr.uniq.size).to eq(arr.size)
     end

@@ -21,10 +21,14 @@ class SudokuSolver
     while not done?
       puts "There are still #{remaining_zeros} zero(s) remaining"
       check_candidates
-      insert_number_if_theres_only_one_option
+      insert_number_if_theres_only_one_option('rows')
+      insert_number_if_theres_only_one_option('columns')
+      insert_number_if_theres_only_one_option('subgrids')
+      insert_candidate_if_its_the_only_ocurrence('columns')
+      insert_candidate_if_its_the_only_ocurrence('rows')
+      insert_candidate_if_its_the_only_ocurrence('subgrids')
       break unless is_progressing?
       check_candidates
-
     end
     puts "There are #{remaining_zeros} zero(s) remaining"
     write_to_csv if remaining_zeros == 0
@@ -34,43 +38,79 @@ class SudokuSolver
     (0...9).each do |row_index|
       (0...9).each do |cell_index|
         cell = @grid.rows[row_index].cells[cell_index]
-        insert_number_if_theres_only_one_candidate(cell)
-        cell.candidates = cell.candidates - convert_row_to_array(cell.row)
-        insert_number_if_theres_only_one_candidate(cell)
-        cell.candidates = cell.candidates - convert_column_to_array(cell.column)
-        insert_number_if_theres_only_one_candidate(cell)
-        cell.candidates = cell.candidates - convert_subgrid_to_array(cell.subgrid)
+        cell.candidates = cell.candidates - convert_rows_to_array(cell.row)
+        cell.candidates = cell.candidates - convert_columns_to_array(cell.column)
+        cell.candidates = cell.candidates - convert_subgrids_to_array(cell.subgrid)
         insert_number_if_theres_only_one_candidate(cell)
       end
     end
   end
 
   def insert_number_if_theres_only_one_candidate(cell)
-    cell.value = cell.candidates[0] if cell.candidates.size == 1 && cell.candidates[0] != 0
+    if cell.candidates.size == 1 && cell.candidates[0] != 0
+      cell.value = cell.candidates[0]
+      cell.candidates = []
+    end
   end
 
-  def insert_number_if_theres_only_one_option
-    (0...9).each do |each_row|
-      array = convert_row_to_array(each_row)
-      array_zeroes = find_all_zeroes(array)
-      array_zeroes.each do |zero|
-        grid.rows[each_row].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
+  def insert_candidate_if_its_the_only_ocurrence(group)
+    (0...9).each do |group_index|
+      array = []
+      (0...9).each do |cell_index|
+        eval("array << grid.#{group}[group_index].cells[cell_index].candidates")
+      end
+      array.flatten!
+      certain_candidate = array.detect{ |unique| array.count(unique) == 1 }
+      if certain_candidate != nil
+        (0...9).each do |cell|
+          if eval("grid.#{group}[group_index].cells[cell].candidates.find { |each| each == certain_candidate}") &&
+            eval("grid.#{group}[group_index].cells[cell].candidates.size != 9") &&
+            is_a_valid_option?(certain_candidate, eval("grid.#{group}[group_index].cells[cell]"))
+
+            eval("grid.#{group}[group_index].cells[cell].value = certain_candidate")
+            eval("grid.#{group}[group_index].cells[cell].candidates = []")
+          end
+        end
       end
     end
-    (0...9).each do |each_column|
-      array = convert_column_to_array(each_column)
+  end
+
+  def insert_number_if_theres_only_one_option(group)
+    (0...9).each do |each_group|
+      array = eval("convert_#{group}_to_array(each_group)")
       array_zeroes = find_all_zeroes(array)
       array_zeroes.each do |zero|
-        grid.columns[each_column].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
+        if missing_numbers(array).size == 1
+          eval("grid.#{group}[each_group].cells[zero].value = missing_numbers(array)[0]")
+          eval("grid.#{group}[each_group].cells[zero].candidates = []")
+        end
       end
     end
-    (0...9).each do |each_subgrid|
-      array = convert_subgrid_to_array(each_subgrid)
-      array_zeroes = find_all_zeroes(array)
-      array_zeroes.each do |zero|
-        grid.subgrids[each_subgrid].cells[zero].value = missing_numbers(array)[0] if missing_numbers(array).size == 1
-      end
+  end
+
+  def is_a_valid_option?(certain_candidate, cell)
+    arr = []
+    (0...9).each do |each_cell|
+      arr << grid.rows[cell.row].cells[each_cell].value
     end
+    arr.delete_if { |x| x == 0 }
+    return false if arr.include?(certain_candidate)
+
+    arr = []
+    (0...9).each do |each_cell|
+      arr << grid.columns[cell.column].cells[each_cell].value
+    end
+    arr.delete_if { |x| x == 0 }
+    return false if arr.include?(certain_candidate)
+
+    arr = []
+    (0...9).each do |each_cell|
+      arr << grid.subgrids[cell.subgrid].cells[each_cell].value
+    end
+    arr.delete_if { |x| x == 0 }
+    return false if arr.include?(certain_candidate)
+
+    true
   end
 
   def is_progressing?
@@ -82,7 +122,7 @@ class SudokuSolver
     true
   end
 
-  def convert_row_to_array(index)
+  def convert_rows_to_array(index)
     row_values_in_array = []
     grid.rows[index].cells.each do |cell|
       row_values_in_array << cell.value
@@ -90,7 +130,7 @@ class SudokuSolver
     row_values_in_array
   end
 
-  def convert_column_to_array(index)
+  def convert_columns_to_array(index)
     columns_values_in_array = []
     grid.columns[index].cells.each do |cell|
       columns_values_in_array << cell.value
@@ -98,7 +138,7 @@ class SudokuSolver
     columns_values_in_array
   end
 
-  def convert_subgrid_to_array(index)
+  def convert_subgrids_to_array(index)
     subgrid_values_in_array = []
     grid.subgrids[index].cells.each do |cell|
       subgrid_values_in_array << cell.value
@@ -126,15 +166,15 @@ class SudokuSolver
 
   def done?
     (0...9).each do |each_row|
-      array = convert_row_to_array(each_row)
+      array = convert_rows_to_array(each_row)
       return false if (array.uniq.size != array.size) && (array.sum != 45)
     end
     (0...9).each do |each_column|
-      array = convert_column_to_array(each_column)
+      array = convert_columns_to_array(each_column)
       return false if array.uniq.size != array.size && (array.sum != 45)
     end
     (0...9).each do |each_subgrid|
-      array = convert_subgrid_to_array(each_subgrid)
+      array = convert_subgrids_to_array(each_subgrid)
       return false if array.uniq.size != array.size && (array.sum != 45)
     end
     true
@@ -258,3 +298,5 @@ class Cell
 end
 
 solved = SudokuSolver.new
+
+binding.pry
