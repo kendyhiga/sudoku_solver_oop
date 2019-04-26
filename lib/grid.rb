@@ -11,7 +11,7 @@ class SudokuSolver
   end
 
   def read_from_csv
-    print 'easy, medium or hard: '
+    print 'easy, medium, hard or expert: '
     @difficulty = gets.chomp
     parsed_csv = CSV.read("lib/#{@difficulty}.csv", converters: :numeric)
     @puzzles = {game: parsed_csv}
@@ -21,12 +21,19 @@ class SudokuSolver
     while not done?
       puts "There are still #{remaining_zeros} zero(s) remaining"
       check_candidates
+
       insert_number_if_theres_only_one_option('rows')
       insert_number_if_theres_only_one_option('columns')
       insert_number_if_theres_only_one_option('subgrids')
-      insert_candidate_if_its_the_only_ocurrence('columns')
-      insert_candidate_if_its_the_only_ocurrence('rows')
-      insert_candidate_if_its_the_only_ocurrence('subgrids')
+
+      insert_candidate_if_its_the_only_occurrence('rows')
+      insert_candidate_if_its_the_only_occurrence('columns')
+      insert_candidate_if_its_the_only_occurrence('subgrids')
+
+      remove_known_candidates_from_group('rows')
+      remove_known_candidates_from_group('columns')
+      remove_known_candidates_from_group('subgrids')
+
       break unless is_progressing?
       check_candidates
     end
@@ -46,6 +53,25 @@ class SudokuSolver
     end
   end
 
+  def remove_known_candidates_from_group(group)
+    (0...9).each do |group_index|
+      array = []
+      (0...9).each do |cell_index|
+        eval("array << grid.#{group}[group_index].cells[cell_index].candidates")
+      end
+      to_remove = array.detect{ |repeated| array.count(repeated) == repeated.size }
+      if to_remove != nil
+        (0...9).each do |cell_index|
+          to_remove.each do |each_item_to_remove|
+            eval("if to_remove != grid.#{group}[group_index].cells[cell_index].candidates
+              grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)
+            end")
+          end
+        end
+      end
+    end
+  end
+
   def insert_number_if_theres_only_one_candidate(cell)
     if cell.candidates.size == 1 && cell.candidates[0] != 0
       cell.value = cell.candidates[0]
@@ -53,7 +79,7 @@ class SudokuSolver
     end
   end
 
-  def insert_candidate_if_its_the_only_ocurrence(group)
+  def insert_candidate_if_its_the_only_occurrence(group)
     (0...9).each do |group_index|
       array = []
       (0...9).each do |cell_index|
@@ -298,5 +324,3 @@ class Cell
 end
 
 solved = SudokuSolver.new
-
-binding.pry
