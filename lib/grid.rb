@@ -34,6 +34,10 @@ class SudokuSolver
       remove_known_candidates_from_group('columns')
       remove_known_candidates_from_group('subgrids')
 
+      advanced_remove_known_candidates_from_group('rows')
+      advanced_remove_known_candidates_from_group('columns')
+      advanced_remove_known_candidates_from_group('subgrids')
+
       break unless is_progressing?
       check_candidates
     end
@@ -55,11 +59,11 @@ class SudokuSolver
 
   def remove_known_candidates_from_group(group)
     (0...9).each do |group_index|
-      array = []
+      group_candidates = []
       (0...9).each do |cell_index|
-        eval("array << grid.#{group}[group_index].cells[cell_index].candidates")
+        eval("group_candidates << grid.#{group}[group_index].cells[cell_index].candidates")
       end
-      to_remove = array.detect{ |repeated| array.count(repeated) == repeated.size }
+      to_remove = group_candidates.detect{ |repeated| group_candidates.count(repeated) == repeated.size }
       if to_remove != nil
         (0...9).each do |cell_index|
           to_remove.each do |each_item_to_remove|
@@ -69,6 +73,45 @@ class SudokuSolver
           end
         end
       end
+    end
+  end
+
+  def advanced_remove_known_candidates_from_group(group)
+    (0...9).each do |group_index|
+      group_candidates = []
+      (0...9).each do |cell_index|
+        eval("group_candidates << grid.#{group}[group_index].cells[cell_index].candidates")
+      end
+
+      group_candidates.each do |each_candidate_a|
+        next if each_candidate_a == []
+        same_range_candidates = []
+        same_range_candidates << each_candidate_a
+        group_candidates.each do |each_candidate_b|
+          next if each_candidate_b == []
+          next if each_candidate_a == each_candidate_b
+          if (each_candidate_a - each_candidate_b) == []
+            same_range_candidates << each_candidate_b
+            if (same_range_candidates.flatten.uniq.size == each_candidate_b.count) &&
+              (same_range_candidates.size == each_candidate_b.size)
+              (0...9).each do |cell_index|
+                eval("unless same_range_candidates.include?(grid.#{group}[group_index].cells[cell_index].candidates)
+                  same_range_candidates.flatten.uniq.each do |each_item_to_remove|
+                    grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)
+                  end
+                end")
+              end
+
+            end
+          end
+        end
+      end
+
+      to_remove = group_candidates.detect{ |repeated| group_candidates.count(repeated) == repeated.size }
+      if to_remove != nil
+
+      end
+
     end
   end
 
