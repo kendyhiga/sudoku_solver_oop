@@ -1,4 +1,4 @@
-require 'grid'
+require 'sudokusolver'
 
 describe Grid do
   solved = SudokuSolver.new

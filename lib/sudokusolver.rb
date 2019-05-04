@@ -6,7 +6,7 @@ class SudokuSolver
   attr_reader :grid
   def initialize
     read_from_csv
-      @grid = Grid.new(@puzzles[:game])
+    @grid = Grid.new(@puzzles[:game])
     @last_remaining_zeros = nil
     solve
   end
@@ -24,7 +24,9 @@ class SudokuSolver
       check_candidates
 
       run_strategies
+      run_advanced_strategies
 
+      break if remaining_zeros == 0
       break unless is_progressing?
       check_candidates
     end
@@ -44,10 +46,15 @@ class SudokuSolver
     remove_known_candidates_from_group('rows')
     remove_known_candidates_from_group('columns')
     remove_known_candidates_from_group('subgrids')
+  end
 
-    advanced_remove_known_candidates_from_group('rows')
-    advanced_remove_known_candidates_from_group('columns')
-    advanced_remove_known_candidates_from_group('subgrids')
+  def run_advanced_strategies
+    # advanced_remove_known_candidates_from_group('rows')
+    # advanced_remove_known_candidates_from_group('columns')
+    # advanced_remove_known_candidates_from_group('subgrids')
+
+    xwing_strategy_rows
+    # xwing_strategy_columns
   end
 
   def check_candidates
@@ -120,8 +127,111 @@ class SudokuSolver
     end
   end
 
+  def xwing_strategy_rows
+    (0...9).each do |each_row|
+      row_candidates = []
+
+      (0...9).each do |each_cell|
+        row_candidates << grid.rows[each_row].cells[each_cell].candidates
+      end
+
+      row_candidates.flatten.each do |value|
+        if row_candidates.flatten.count(value) == 2
+          xwing_possibility = value
+          xwing_indexes = []
+          xwing_indexes_compare = []
+
+          row_candidates.each_with_index do |value, index|
+            if value.include?(xwing_possibility)
+              xwing_indexes << index
+            end
+          end
+
+          (0...9).each do |each|
+            if grid.columns[xwing_indexes.first].cells[each].candidates.include?(xwing_possibility)
+              next if each_row == each
+              second_row_candidates = []
+
+              (0...9).each do |each_cell|
+                second_row_candidates << grid.rows[each].cells[each_cell].candidates
+              end
+
+              if second_row_candidates.flatten.count(xwing_possibility) == 2
+                second_row_candidates.each_with_index do |value, index|
+                  if value.include?(xwing_possibility)
+                    xwing_indexes_compare << index
+                  end
+                end
+              end
+
+              if xwing_indexes == xwing_indexes_compare
+                (0...9).each do |cell|
+                  next if cell == each_row || cell == each
+                  #binding.pry
+                  grid.columns[xwing_indexes.first].cells[cell].candidates.delete(xwing_possibility)
+                  grid.columns[xwing_indexes.last].cells[cell].candidates.delete(xwing_possibility)
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def xwing_strategy_columns
+    (0...9).each do |each_column|
+      column_candidates = []
+
+      (0...9).each do |each_cell|
+        column_candidates << grid.columns[each_column].cells[each_cell].candidates
+      end
+
+      column_candidates.flatten.each do |value|
+        if column_candidates.flatten.count(value) == 2
+          xwing_possibility = value
+          xwing_indexes = []
+          xwing_indexes_compare = []
+
+          column_candidates.each_with_index do |value, index|
+            if value.include?(xwing_possibility)
+              xwing_indexes << index
+            end
+          end
+
+          (0...9).each do |each|
+            if grid.rows[xwing_indexes.first].cells[each].candidates.include?(xwing_possibility)
+              next if each_column == each
+              second_column_candidates = []
+
+              (0...9).each do |each_cell|
+                second_column_candidates << grid.columns[each].cells[each_cell].candidates
+              end
+
+              if second_column_candidates.flatten.count(xwing_possibility) == 2
+                second_column_candidates.each_with_index do |value, index|
+                  if value.include?(xwing_possibility)
+                    xwing_indexes_compare << index
+                  end
+                end
+              end
+
+              if xwing_indexes == xwing_indexes_compare
+                (0...9).each do |cell|
+                  next if cell == each_column || cell == each
+                  grid.rows[xwing_indexes.first].cells[cell].candidates.delete(xwing_possibility)
+                  grid.rows[xwing_indexes.last].cells[cell].candidates.delete(xwing_possibility)
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
   def insert_number_if_theres_only_one_candidate(cell)
-    if cell.candidates.size == 1 && cell.candidates[0] != 0
+    if cell.candidates.size == 1 && cell.candidates[0] != 0 && is_a_valid_option?(cell.candidates[0], cell)
       cell.value = cell.candidates[0]
       cell.candidates = []
     end
@@ -154,7 +264,9 @@ class SudokuSolver
       array = eval("convert_#{group}_to_array(each_group)")
       array_zeroes = find_all_zeroes(array)
       array_zeroes.each do |zero|
-        if missing_numbers(array).size == 1
+        if missing_numbers(array).size == 1 &&
+          is_a_valid_option?(eval("missing_numbers(array)[0]"), eval("grid.#{group}[each_group].cells[zero]"))
+
           eval("grid.#{group}[each_group].cells[zero].value = missing_numbers(array)[0]")
           eval("grid.#{group}[each_group].cells[zero].candidates = []")
         end
@@ -268,5 +380,3 @@ class SudokuSolver
 end
 
 solved = SudokuSolver.new
-
-binding.pry
