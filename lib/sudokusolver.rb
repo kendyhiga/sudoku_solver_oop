@@ -53,7 +53,7 @@ class SudokuSolver
     # advanced_remove_known_candidates_from_group('columns')
     # advanced_remove_known_candidates_from_group('subgrids')
 
-    xwing_strategy_rows
+    # xwing_strategy_rows
     # xwing_strategy_columns
   end
 
@@ -380,3 +380,5 @@ class SudokuSolver
 end
 
 solved = SudokuSolver.new
+
+binding.pry
