@@ -14,7 +14,7 @@ class SudokuSolver
   def read_from_csv
     print 'easy, medium, hard or expert: '
     @difficulty = gets.chomp
-    parsed_csv = CSV.read("lib/#{@difficulty}.csv", converters: :numeric)
+    parsed_csv = CSV.read("lib/csvs/#{@difficulty}.csv", converters: :numeric)
     @puzzles = {game: parsed_csv}
   end
 
@@ -367,7 +367,7 @@ class SudokuSolver
   end
 
   def write_to_csv
-    CSV.open("lib/#{@difficulty}_done.csv", "wb") do |csv|
+    CSV.open("lib/csvs/#{@difficulty}_done.csv", "wb") do |csv|
       (0...9).each do |each_row|
         arr = []
         (0...9).each do |each_cell|
@@ -380,5 +380,3 @@ class SudokuSolver
 end
 
 solved = SudokuSolver.new
-
-binding.pry
