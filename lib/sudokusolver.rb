@@ -21,55 +21,99 @@ class SudokuSolver
   def solve
     while not done?
       puts "There are still #{remaining_zeros} zero(s) remaining"
-      check_candidates
+      visual_elimination
 
       run_strategies
       run_advanced_strategies
 
       break if remaining_zeros == 0
       break unless is_progressing?
-      check_candidates
+      visual_elimination
     end
     puts "There are #{remaining_zeros} zero(s) remaining"
     write_to_csv if remaining_zeros == 0
   end
 
   def run_strategies
-    insert_number_if_theres_only_one_option('rows')
-    insert_number_if_theres_only_one_option('columns')
-    insert_number_if_theres_only_one_option('subgrids')
+    open_single('rows')
+    open_single('columns')
+    open_single('subgrids')
 
-    insert_candidate_if_its_the_only_occurrence('rows')
-    insert_candidate_if_its_the_only_occurrence('columns')
-    insert_candidate_if_its_the_only_occurrence('subgrids')
+    hidden_single('rows')
+    hidden_single('columns')
+    hidden_single('subgrids')
 
-    remove_known_candidates_from_group('rows')
-    remove_known_candidates_from_group('columns')
-    remove_known_candidates_from_group('subgrids')
+    naked_pairs('rows')
+    naked_pairs('columns')
+    naked_pairs('subgrids')
   end
 
   def run_advanced_strategies
-    # advanced_remove_known_candidates_from_group('rows')
-    # advanced_remove_known_candidates_from_group('columns')
-    # advanced_remove_known_candidates_from_group('subgrids')
+    naked_triple_quadriple('rows')
+    naked_triple_quadriple('columns')
+    naked_triple_quadriple('subgrids')
 
     # xwing_strategy_rows
     # xwing_strategy_columns
   end
 
-  def check_candidates
+  def open_single(group)
+    (0...9).each do |each_group|
+      array = eval("convert_#{group}_to_array(each_group)")
+      array_zeroes = find_all_zeroes(array)
+      array_zeroes.each do |zero|
+        if missing_numbers(array).size == 1 &&
+          is_a_valid_option?(eval("missing_numbers(array)[0]"), eval("grid.#{group}[each_group].cells[zero]"))
+
+          eval("grid.#{group}[each_group].cells[zero].value = missing_numbers(array)[0]")
+          eval("grid.#{group}[each_group].cells[zero].candidates = []")
+        end
+      end
+    end
+  end
+
+  def lone_single(cell)
+    if cell.candidates.size == 1 && cell.candidates[0] != 0 && is_a_valid_option?(cell.candidates[0], cell)
+      cell.value = cell.candidates[0]
+      cell.candidates = []
+    end
+  end
+
+  def visual_elimination
     (0...9).each do |row_index|
       (0...9).each do |cell_index|
         cell = @grid.rows[row_index].cells[cell_index]
         cell.candidates = cell.candidates - convert_rows_to_array(cell.row)
         cell.candidates = cell.candidates - convert_columns_to_array(cell.column)
         cell.candidates = cell.candidates - convert_subgrids_to_array(cell.subgrid)
-        insert_number_if_theres_only_one_candidate(cell)
+        lone_single(cell)
       end
     end
   end
 
-  def remove_known_candidates_from_group(group)
+  def hidden_single(group)
+    (0...9).each do |group_index|
+      array = []
+      (0...9).each do |cell_index|
+        eval("array << grid.#{group}[group_index].cells[cell_index].candidates")
+      end
+      array.flatten!
+      certain_candidate = array.detect{ |unique| array.count(unique) == 1 }
+      if certain_candidate != nil
+        (0...9).each do |cell|
+          if eval("grid.#{group}[group_index].cells[cell].candidates.find { |each| each == certain_candidate}") &&
+            eval("grid.#{group}[group_index].cells[cell].candidates.size != 9") &&
+            is_a_valid_option?(certain_candidate, eval("grid.#{group}[group_index].cells[cell]"))
+
+            eval("grid.#{group}[group_index].cells[cell].value = certain_candidate")
+            eval("grid.#{group}[group_index].cells[cell].candidates = []")
+          end
+        end
+      end
+    end
+  end
+
+  def naked_pairs(group)
     (0...9).each do |group_index|
       group_candidates = []
       (0...9).each do |cell_index|
@@ -88,7 +132,7 @@ class SudokuSolver
     end
   end
 
-  def advanced_remove_known_candidates_from_group(group)
+  def naked_triple_quadriple(group)
     (0...9).each do |group_index|
       group_candidates = []
       (0...9).each do |cell_index|
@@ -113,17 +157,10 @@ class SudokuSolver
                   end
                 end")
               end
-
             end
           end
         end
       end
-
-      to_remove = group_candidates.detect{ |repeated| group_candidates.count(repeated) == repeated.size }
-      if to_remove != nil
-
-      end
-
     end
   end
 
@@ -225,50 +262,6 @@ class SudokuSolver
               end
             end
           end
-        end
-      end
-    end
-  end
-
-  def insert_number_if_theres_only_one_candidate(cell)
-    if cell.candidates.size == 1 && cell.candidates[0] != 0 && is_a_valid_option?(cell.candidates[0], cell)
-      cell.value = cell.candidates[0]
-      cell.candidates = []
-    end
-  end
-
-  def insert_candidate_if_its_the_only_occurrence(group)
-    (0...9).each do |group_index|
-      array = []
-      (0...9).each do |cell_index|
-        eval("array << grid.#{group}[group_index].cells[cell_index].candidates")
-      end
-      array.flatten!
-      certain_candidate = array.detect{ |unique| array.count(unique) == 1 }
-      if certain_candidate != nil
-        (0...9).each do |cell|
-          if eval("grid.#{group}[group_index].cells[cell].candidates.find { |each| each == certain_candidate}") &&
-            eval("grid.#{group}[group_index].cells[cell].candidates.size != 9") &&
-            is_a_valid_option?(certain_candidate, eval("grid.#{group}[group_index].cells[cell]"))
-
-            eval("grid.#{group}[group_index].cells[cell].value = certain_candidate")
-            eval("grid.#{group}[group_index].cells[cell].candidates = []")
-          end
-        end
-      end
-    end
-  end
-
-  def insert_number_if_theres_only_one_option(group)
-    (0...9).each do |each_group|
-      array = eval("convert_#{group}_to_array(each_group)")
-      array_zeroes = find_all_zeroes(array)
-      array_zeroes.each do |zero|
-        if missing_numbers(array).size == 1 &&
-          is_a_valid_option?(eval("missing_numbers(array)[0]"), eval("grid.#{group}[each_group].cells[zero]"))
-
-          eval("grid.#{group}[each_group].cells[zero].value = missing_numbers(array)[0]")
-          eval("grid.#{group}[each_group].cells[zero].candidates = []")
         end
       end
     end
