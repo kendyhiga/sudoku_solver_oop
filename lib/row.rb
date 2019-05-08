@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require_relative 'cell'
 
+# Each Row have 9 cells
 class Row
   attr_reader :cells
   def initialize(values, row_index_number)

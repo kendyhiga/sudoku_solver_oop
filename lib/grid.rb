@@ -1,7 +1,11 @@
+# frozen_string_literal: true
+
 require_relative 'row'
 require_relative 'column'
 require_relative 'subgrid'
 
+# The grid represents the complete sudoku game table
+# it has 9 rows, 9 columns and 9 subgrids
 class Grid
   attr_reader :cells, :rows, :columns, :subgrids
 
@@ -48,5 +52,4 @@ class Grid
       end
     end
   end
-
 end

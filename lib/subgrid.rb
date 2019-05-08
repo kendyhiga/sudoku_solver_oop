@@ -1,5 +1,8 @@
+# frozen_string_literal: true
+
 require_relative 'cell'
 
+# Each Subgrid have 9 cells
 class Subgrid
   attr_reader :cells
   def initialize(cells, subgrid_index_number)

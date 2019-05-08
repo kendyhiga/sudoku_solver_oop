@@ -1,7 +1,10 @@
+# frozen_string_literal: true
+
 require 'csv'
 require 'pry'
 require_relative 'grid'
 
+# This is the main class, still a lot of wip
 class SudokuSolver
   attr_reader :grid
   def initialize
@@ -15,23 +18,25 @@ class SudokuSolver
     print 'easy, medium, hard or expert: '
     @difficulty = gets.chomp
     parsed_csv = CSV.read("lib/csvs/#{@difficulty}.csv", converters: :numeric)
-    @puzzles = {game: parsed_csv}
+    @puzzles = { game: parsed_csv }
   end
 
   def solve
-    while not done?
+    until done?
       puts "There are still #{remaining_zeros} zero(s) remaining"
       visual_elimination
 
       run_strategies
       run_advanced_strategies
 
-      break if remaining_zeros == 0
-      break unless is_progressing?
+      break if remaining_zeros.zero?
+
+      break unless progressing?
+
       visual_elimination
     end
     puts "There are #{remaining_zeros} zero(s) remaining"
-    write_to_csv if remaining_zeros == 0
+    write_to_csv if remaining_zeros.zero?
   end
 
   def run_strategies
@@ -63,7 +68,7 @@ class SudokuSolver
       array_zeroes = find_all_zeroes(array)
       array_zeroes.each do |zero|
         if missing_numbers(array).size == 1 &&
-          is_a_valid_option?(eval("missing_numbers(array)[0]"), eval("grid.#{group}[each_group].cells[zero]"))
+          a_valid_option?(eval("missing_numbers(array)[0]"), eval("grid.#{group}[each_group].cells[zero]"))
 
           eval("grid.#{group}[each_group].cells[zero].value = missing_numbers(array)[0]")
           eval("grid.#{group}[each_group].cells[zero].candidates = []")
@@ -73,7 +78,7 @@ class SudokuSolver
   end
 
   def lone_single(cell)
-    if cell.candidates.size == 1 && cell.candidates[0] != 0 && is_a_valid_option?(cell.candidates[0], cell)
+    if cell.candidates.size == 1 && cell.candidates[0] != 0 && a_valid_option?(cell.candidates[0], cell)
       cell.value = cell.candidates[0]
       cell.candidates = []
     end
@@ -99,11 +104,11 @@ class SudokuSolver
       end
       array.flatten!
       certain_candidate = array.detect{ |unique| array.count(unique) == 1 }
-      if certain_candidate != nil
+      if !certain_candidate.nil?
         (0...9).each do |cell|
           if eval("grid.#{group}[group_index].cells[cell].candidates.find { |each| each == certain_candidate}") &&
             eval("grid.#{group}[group_index].cells[cell].candidates.size != 9") &&
-            is_a_valid_option?(certain_candidate, eval("grid.#{group}[group_index].cells[cell]"))
+            a_valid_option?(certain_candidate, eval("grid.#{group}[group_index].cells[cell]"))
 
             eval("grid.#{group}[group_index].cells[cell].value = certain_candidate")
             eval("grid.#{group}[group_index].cells[cell].candidates = []")
@@ -120,7 +125,7 @@ class SudokuSolver
         eval("group_candidates << grid.#{group}[group_index].cells[cell_index].candidates")
       end
       to_remove = group_candidates.detect{ |repeated| group_candidates.count(repeated) == repeated.size }
-      if to_remove != nil
+      if !to_remove.nil?
         (0...9).each do |cell_index|
           to_remove.each do |each_item_to_remove|
             eval("if to_remove != grid.#{group}[group_index].cells[cell_index].candidates
@@ -141,11 +146,14 @@ class SudokuSolver
 
       group_candidates.each do |each_candidate_a|
         next if each_candidate_a == []
+
         same_range_candidates = []
         same_range_candidates << each_candidate_a
         group_candidates.each do |each_candidate_b|
           next if each_candidate_b == []
+
           next if each_candidate_a == each_candidate_b
+
           if (each_candidate_a - each_candidate_b) == []
             same_range_candidates << each_candidate_b
             if (same_range_candidates.flatten.uniq.size == each_candidate_b.count) &&
@@ -187,6 +195,7 @@ class SudokuSolver
           (0...9).each do |each|
             if grid.columns[xwing_indexes.first].cells[each].candidates.include?(xwing_possibility)
               next if each_row == each
+
               second_row_candidates = []
 
               (0...9).each do |each_cell|
@@ -204,7 +213,7 @@ class SudokuSolver
               if xwing_indexes == xwing_indexes_compare
                 (0...9).each do |cell|
                   next if cell == each_row || cell == each
-                  #binding.pry
+
                   grid.columns[xwing_indexes.first].cells[cell].candidates.delete(xwing_possibility)
                   grid.columns[xwing_indexes.last].cells[cell].candidates.delete(xwing_possibility)
                 end
@@ -239,6 +248,7 @@ class SudokuSolver
           (0...9).each do |each|
             if grid.rows[xwing_indexes.first].cells[each].candidates.include?(xwing_possibility)
               next if each_column == each
+
               second_column_candidates = []
 
               (0...9).each do |each_cell|
@@ -256,6 +266,7 @@ class SudokuSolver
               if xwing_indexes == xwing_indexes_compare
                 (0...9).each do |cell|
                   next if cell == each_column || cell == each
+
                   grid.rows[xwing_indexes.first].cells[cell].candidates.delete(xwing_possibility)
                   grid.rows[xwing_indexes.last].cells[cell].candidates.delete(xwing_possibility)
                 end
@@ -267,7 +278,7 @@ class SudokuSolver
     end
   end
 
-  def is_a_valid_option?(certain_candidate, cell)
+  def a_valid_option?(certain_candidate, cell)
     arr = []
     (0...9).each do |each_cell|
       arr << grid.rows[cell.row].cells[each_cell].value
@@ -292,7 +303,7 @@ class SudokuSolver
     true
   end
 
-  def is_progressing?
+  def progressing?
     if @last_remaining_zeros == remaining_zeros && remaining_zeros != 0
       puts 'Unable to solve YET'
       return false
@@ -326,18 +337,18 @@ class SudokuSolver
   end
 
   def find_all_zeroes(array)
-    array.each_index.select { |index| array[index] == 0 }
+    array.each_index.select { |index| array[index].zero? }
   end
 
   def missing_numbers(known_numbers_array)
-    [1,2,3,4,5,6,7,8,9] - known_numbers_array
+    [1, 2, 3, 4, 5, 6, 7, 8, 9] - known_numbers_array
   end
 
   def remaining_zeros
     zero = 0
     (0...9).each do |each_row|
       (0...9).each do |each_cell|
-        zero += 1 if @grid.rows[each_row].cells[each_cell].value == 0
+        zero += 1 if @grid.rows[each_row].cells[each_cell].value.zero?
       end
     end
     zero
@@ -360,7 +371,7 @@ class SudokuSolver
   end
 
   def write_to_csv
-    CSV.open("lib/csvs/#{@difficulty}_done.csv", "wb") do |csv|
+    CSV.open("lib/csvs/#{@difficulty}_done.csv", 'wb') do |csv|
       (0...9).each do |each_row|
         arr = []
         (0...9).each do |each_cell|
