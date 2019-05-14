@@ -367,7 +367,7 @@ class SudokuSolver
       array = convert_subgrids_to_array(each_subgrid)
       return false if array.uniq.size != array.size && (array.sum != 45)
     end
-    true
+    false
   end
 
   def write_to_csv
@@ -384,3 +384,5 @@ class SudokuSolver
 end
 
 solved = SudokuSolver.new
+
+binding.pry
