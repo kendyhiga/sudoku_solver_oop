@@ -54,11 +54,11 @@ class SudokuSolver
   end
 
   def run_advanced_strategies
-    naked_triple_quadriple('rows')
-    naked_triple_quadriple('columns')
-    naked_triple_quadriple('subgrids')
+    naked_triple_quadruple('columns')
+    naked_triple_quadruple('rows')
+    naked_triple_quadruple('subgrids')
 
-    # xwing_strategy_rows
+    xwing_strategy_rows
     # xwing_strategy_columns
   end
 
@@ -137,33 +137,36 @@ class SudokuSolver
     end
   end
 
-  def naked_triple_quadriple(group)
+  def naked_triple_quadruple(group)
     (0...9).each do |group_index|
       group_candidates = []
       (0...9).each do |cell_index|
-        eval("group_candidates << grid.#{group}[group_index].cells[cell_index].candidates")
+        group_candidates << eval("grid.#{group}[group_index].cells[cell_index].candidates")
       end
 
-      group_candidates.each do |each_candidate_a|
+      group_candidates.each_with_index do |each_candidate_a, index_a|
         next if each_candidate_a == []
 
         same_range_candidates = []
         same_range_candidates << each_candidate_a
-        group_candidates.each do |each_candidate_b|
+
+        group_candidates.each_with_index do |each_candidate_b, index_b|
           next if each_candidate_b == []
 
-          next if each_candidate_a == each_candidate_b
+          next if index_a == index_b
 
-          if (each_candidate_a - each_candidate_b) == []
+          if (each_candidate_a - each_candidate_b).all? { |i| each_candidate_a.include? i }
             same_range_candidates << each_candidate_b
-            if (same_range_candidates.flatten.uniq.size == each_candidate_b.count) &&
+            if (same_range_candidates.flatten.uniq.size == each_candidate_b.size) &&
               (same_range_candidates.size == each_candidate_b.size)
               (0...9).each do |cell_index|
-                eval("unless same_range_candidates.include?(grid.#{group}[group_index].cells[cell_index].candidates)
+                next if eval("grid.#{group}[group_index].cells[cell_index].candidates") == []
+                next if cell_index == index_a || cell_index == index_b
+                unless same_range_candidates.include?(eval("grid.#{group}[group_index].cells[cell_index].candidates"))
                   same_range_candidates.flatten.uniq.each do |each_item_to_remove|
-                    grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)
+                    eval("grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)")
                   end
-                end")
+                end
               end
             end
           end
