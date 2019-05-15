@@ -40,16 +40,16 @@ class SudokuSolver
   end
 
   def run_strategies
-    open_single('rows')
     open_single('columns')
+    open_single('rows')
     open_single('subgrids')
 
-    hidden_single('rows')
     hidden_single('columns')
+    hidden_single('rows')
     hidden_single('subgrids')
 
-    naked_pairs('rows')
     naked_pairs('columns')
+    naked_pairs('rows')
     naked_pairs('subgrids')
   end
 
@@ -58,7 +58,7 @@ class SudokuSolver
     naked_triple_quadruple('rows')
     naked_triple_quadruple('subgrids')
 
-    xwing_strategy_rows
+    # xwing_strategy_rows
     # xwing_strategy_columns
   end
 
@@ -100,7 +100,7 @@ class SudokuSolver
     (0...9).each do |group_index|
       array = []
       (0...9).each do |cell_index|
-        eval("array << grid.#{group}[group_index].cells[cell_index].candidates")
+        array << eval("grid.#{group}[group_index].cells[cell_index].candidates")
       end
       array.flatten!
       certain_candidate = array.detect{ |unique| array.count(unique) == 1 }
@@ -122,15 +122,15 @@ class SudokuSolver
     (0...9).each do |group_index|
       group_candidates = []
       (0...9).each do |cell_index|
-        eval("group_candidates << grid.#{group}[group_index].cells[cell_index].candidates")
+        group_candidates << eval("grid.#{group}[group_index].cells[cell_index].candidates")
       end
       to_remove = group_candidates.detect{ |repeated| group_candidates.count(repeated) == repeated.size }
       if !to_remove.nil?
         (0...9).each do |cell_index|
           to_remove.each do |each_item_to_remove|
-            eval("if to_remove != grid.#{group}[group_index].cells[cell_index].candidates
-              grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)
-            end")
+            if to_remove != eval("grid.#{group}[group_index].cells[cell_index].candidates")
+              eval("grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)")
+            end
           end
         end
       end
@@ -144,30 +144,23 @@ class SudokuSolver
         group_candidates << eval("grid.#{group}[group_index].cells[cell_index].candidates")
       end
 
-      group_candidates.each_with_index do |each_candidate_a, index_a|
-        next if each_candidate_a == []
+      group_candidates.each do |each_candidate|
+        next if each_candidate == [] || each_candidate.size < 3
 
-        same_range_candidates = []
-        same_range_candidates << each_candidate_a
+        each_candidate.sort!
+        combinations = (2..each_candidate.size).map { |i| each_candidate.combination(i).to_a }.flatten(1)
 
-        group_candidates.each_with_index do |each_candidate_b, index_b|
-          next if each_candidate_b == []
+        candidates_indexes = []
+        group_candidates.each_with_index do |candidate, index|
+          next if candidate == []
+          candidates_indexes << index if combinations.include?(candidate)
+        end
 
-          next if index_a == index_b
-
-          if (each_candidate_a - each_candidate_b).all? { |i| each_candidate_a.include? i }
-            same_range_candidates << each_candidate_b
-            if (same_range_candidates.flatten.uniq.size == each_candidate_b.size) &&
-              (same_range_candidates.size == each_candidate_b.size)
-              (0...9).each do |cell_index|
-                next if eval("grid.#{group}[group_index].cells[cell_index].candidates") == []
-                next if cell_index == index_a || cell_index == index_b
-                unless same_range_candidates.include?(eval("grid.#{group}[group_index].cells[cell_index].candidates"))
-                  same_range_candidates.flatten.uniq.each do |each_item_to_remove|
-                    eval("grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)")
-                  end
-                end
-              end
+        if candidates_indexes.size == each_candidate.size
+          each_candidate.flatten.uniq.each do |each_item_to_remove|
+            (0...9).each do |cell_index|
+              next if candidates_indexes.include?(cell_index)
+              eval("grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)")
             end
           end
         end
@@ -387,5 +380,3 @@ class SudokuSolver
 end
 
 solved = SudokuSolver.new
-
-binding.pry
