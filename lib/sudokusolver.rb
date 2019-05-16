@@ -170,46 +170,43 @@ class SudokuSolver
 
   def xwing_strategy_rows
     (0...9).each do |each_row|
-      row_candidates = []
+      candidates = []
 
       (0...9).each do |each_cell|
-        row_candidates << grid.rows[each_row].cells[each_cell].candidates
+        candidates << grid.rows[each_row].cells[each_cell].candidates
       end
 
-      row_candidates.flatten.each do |value|
-        if row_candidates.flatten.count(value) == 2
+      candidates.flatten.each do |value|
+        if candidates.flatten.count(value) == 2
           xwing_possibility = value
           xwing_indexes = []
-          xwing_indexes_compare = []
 
-          row_candidates.each_with_index do |value, index|
+          candidates.each_with_index do |value, index|
             if value.include?(xwing_possibility)
               xwing_indexes << index
             end
           end
 
-          (0...9).each do |each|
-            if grid.columns[xwing_indexes.first].cells[each].candidates.include?(xwing_possibility)
-              next if each_row == each
+          ((each_row + 1)...9).each do |each_compare|
+            candidates_compare = []
 
-              second_row_candidates = []
+            (0...9).each do |each_cell|
+              candidates_compare << grid.rows[each_row].cells[each_cell].candidates
+            end
 
-              (0...9).each do |each_cell|
-                second_row_candidates << grid.rows[each].cells[each_cell].candidates
-              end
+            if candidates_compare.flatten.count(xwing_possibility) == 2
+              xwing_indexes_compare = []
 
-              if second_row_candidates.flatten.count(xwing_possibility) == 2
-                second_row_candidates.each_with_index do |value, index|
-                  if value.include?(xwing_possibility)
-                    xwing_indexes_compare << index
-                  end
+              candidates_compare.each_with_index do |value, index|
+                if value.include?(xwing_possibility)
+                  xwing_indexes_compare << index
                 end
               end
 
               if xwing_indexes == xwing_indexes_compare
+                puts "#{xwing_indexes}"
                 (0...9).each do |cell|
-                  next if cell == each_row || cell == each
-
+                  next if cell == each_row || cell == each_compare
                   grid.columns[xwing_indexes.first].cells[cell].candidates.delete(xwing_possibility)
                   grid.columns[xwing_indexes.last].cells[cell].candidates.delete(xwing_possibility)
                 end
@@ -380,3 +377,5 @@ class SudokuSolver
 end
 
 solved = SudokuSolver.new
+
+binding.pry
