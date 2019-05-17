@@ -212,7 +212,7 @@ class SudokuSolver
         candidates << grid.rows[each_row].cells[each_cell].candidates
       end
 
-      candidates.flatten.each do |value|
+      candidates.flatten.uniq.each do |value|
         if candidates.flatten.count(value) == 2
           xwing_possibility = value
           xwing_indexes = []
@@ -227,7 +227,7 @@ class SudokuSolver
             candidates_compare = []
 
             (0...9).each do |each_cell|
-              candidates_compare << grid.rows[each_row].cells[each_cell].candidates
+              candidates_compare << grid.rows[each_compare].cells[each_cell].candidates
             end
 
             if candidates_compare.flatten.count(xwing_possibility) == 2
@@ -240,7 +240,6 @@ class SudokuSolver
               end
 
               if xwing_indexes == xwing_indexes_compare
-                puts "#{xwing_indexes}"
                 (0...9).each do |cell|
                   next if cell == each_row || cell == each_compare
                   grid.columns[xwing_indexes.first].cells[cell].candidates.delete(xwing_possibility)
