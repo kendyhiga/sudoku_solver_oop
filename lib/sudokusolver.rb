@@ -51,6 +51,8 @@ class SudokuSolver
     naked_pairs('columns')
     naked_pairs('rows')
     naked_pairs('subgrids')
+
+    pointing_pair_triple
   end
 
   def run_advanced_strategies
@@ -130,6 +132,40 @@ class SudokuSolver
           to_remove.each do |each_item_to_remove|
             if to_remove != eval("grid.#{group}[group_index].cells[cell_index].candidates")
               eval("grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)")
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def pointing_pair_triple
+    (0...9).each do |subgrid|
+      subgrid_candidates = []
+      (0...9).each do |cell|
+        subgrid_candidates << grid.subgrids[subgrid].cells[cell].candidates
+      end
+
+      (1..9).each do |value|
+        if subgrid_candidates.flatten.count(value).between?(2,3)
+          pointing_indexes_rows = []
+          pointing_indexes_columns = []
+          (0...9).each do |index|
+            if grid.subgrids[subgrid].cells[index].candidates.include?(value)
+              pointing_indexes_rows << grid.subgrids[subgrid].cells[index].row
+              pointing_indexes_columns << grid.subgrids[subgrid].cells[index].column
+            end
+          end
+          if pointing_indexes_rows.uniq.size == 1
+            (0...9).each do |index|
+              next if pointing_indexes_columns.include?(index)
+              grid.rows[pointing_indexes_rows.first].cells[index].candidates.delete(value)
+            end
+          end
+          if pointing_indexes_columns.uniq.size == 1
+            (0...9).each do |index|
+              next if pointing_indexes_rows.include?(index)
+              grid.columns[pointing_indexes_columns.first].cells[index].candidates.delete(value)
             end
           end
         end
