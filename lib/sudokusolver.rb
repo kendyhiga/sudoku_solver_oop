@@ -15,8 +15,8 @@ class SudokuSolver
   end
 
   def read_from_csv(difficulty)
-    #print 'easy, medium, hard or expert: '
-    #@difficulty = gets.chomp
+    # print 'easy, medium, hard or expert: '
+    # @difficulty = gets.chomp
     @difficulty = difficulty
     parsed_csv = CSV.read("lib/csvs/#{@difficulty}.csv", converters: :numeric)
     @puzzles = { game: parsed_csv }
@@ -29,11 +29,11 @@ class SudokuSolver
       visual_elimination
 
       run_strategies
-      #run_advanced_strategies
+      # run_advanced_strategies
 
     end
     puts "There are #{remaining_zeros} zero(s) remaining"
-    write_to_csv if remaining_zeros.zero?
+    # write_to_csv if remaining_zeros.zero?
   end
 
   def run_strategies
@@ -64,14 +64,14 @@ class SudokuSolver
 
   def open_single(group)
     (0...9).each do |each_group|
-      array = eval("grid.#{group}[each_group].values")
+      array = grid.send(group.to_sym)[each_group].values
       array_zeroes = array.each_index.select { |index| array[index].zero? }
       array_zeroes.each do |zero|
         if missing_numbers(array).size == 1 &&
-          a_valid_option?(eval("missing_numbers(array)[0]"), eval("grid.#{group}[each_group].cells[zero]"))
+          a_valid_option?(missing_numbers(array)[0], grid.send(group)[each_group].cells[zero])
 
-          eval("grid.#{group}[each_group].cells[zero].value = missing_numbers(array)[0]")
-          eval("grid.#{group}[each_group].cells[zero].candidates = []")
+          grid.send(group)[each_group].cells[zero].value = missing_numbers(array)[0]
+          grid.send(group)[each_group].cells[zero].candidates = []
         end
       end
     end
@@ -100,17 +100,17 @@ class SudokuSolver
   def hidden_single(group)
     (0...9).each do |group_index|
       array = []
-      array << eval("grid.#{group}[group_index].candidates")
+      array << grid.send(group.to_sym)[group_index].candidates
       array.flatten!
       certain_candidate = array.detect{ |unique| array.count(unique) == 1 }
       if !certain_candidate.nil?
         (0...9).each do |cell|
-          if eval("grid.#{group}[group_index].cells[cell].candidates.find { |each| each == certain_candidate}") &&
-            eval("grid.#{group}[group_index].cells[cell].candidates.size != 9") &&
-            a_valid_option?(certain_candidate, eval("grid.#{group}[group_index].cells[cell]"))
+          if grid.send(group)[group_index].cells[cell].candidates.find { |each| each == certain_candidate} &&
+            grid.send(group)[group_index].cells[cell].candidates.size != 9 &&
+            a_valid_option?(certain_candidate, grid.send(group)[group_index].cells[cell])
 
-            eval("grid.#{group}[group_index].cells[cell].value = certain_candidate")
-            eval("grid.#{group}[group_index].cells[cell].candidates = []")
+            grid.send(group)[group_index].cells[cell].value = certain_candidate
+            grid.send(group)[group_index].cells[cell].candidates = []
           end
         end
       end
@@ -119,14 +119,14 @@ class SudokuSolver
 
   def naked_pairs(group)
     (0...9).each do |group_index|
-      group_candidates = eval("grid.#{group}[group_index].candidates")
+      group_candidates = grid.send(group)[group_index].candidates
       to_remove = group_candidates.detect{ |repeated| group_candidates.count(repeated) == repeated.size }
       if !to_remove.nil?
         (0...9).each do |cell_index|
           to_remove.each do |each_item_to_remove|
-            if to_remove != eval("grid.#{group}[group_index].cells[cell_index].candidates")
-              next if eval("grid.#{group}[group_index].cells[cell_index].candidates") == []
-              eval("grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)")
+            if to_remove != grid.send(group)[group_index].cells[cell_index].candidates
+              next if grid.send(group)[group_index].cells[cell_index].candidates == []
+              grid.send(group)[group_index].cells[cell_index].candidates.delete(each_item_to_remove)
             end
           end
         end
@@ -172,7 +172,7 @@ class SudokuSolver
     (0...9).each do |group_index|
       group_candidates = []
       (0...9).each do |cell_index|
-        group_candidates << eval("grid.#{group}[group_index].cells[cell_index].candidates")
+        group_candidates << grid.send(group)[group_index].cells[cell_index].candidates
       end
 
       group_candidates.each do |each_candidate|
@@ -191,7 +191,7 @@ class SudokuSolver
           each_candidate.flatten.uniq.each do |each_item_to_remove|
             (0...9).each do |cell_index|
               next if candidates_indexes.include?(cell_index)
-              eval("grid.#{group}[group_index].cells[cell_index].candidates.delete(each_item_to_remove)")
+              grid.send(group)[group_index].cells[cell_index].candidates.delete(each_item_to_remove)
             end
           end
         end
