@@ -1,8 +1,17 @@
+# frozen_string_literal: true
+
 require 'sudokusolver'
 
 describe Grid do
-  test_cases = %w[ easy medium hard2 hard3 np easy_sudoku_grid medium_sudoku_grid
-                   hard_sudoku_grid expert_sudoku_grid ]
+  test_cases = %w[ easy
+                   medium
+                   hard2
+                   hard3
+                   np
+                   easy_sudoku_grid
+                   medium_sudoku_grid
+                   hard_sudoku_grid
+                   expert_sudoku_grid ]
   test_cases.each do |test|
     solved = SudokuSolver.new(test)
     it 'has 9 rows' do

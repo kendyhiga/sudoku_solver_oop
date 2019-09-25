@@ -49,8 +49,7 @@ class SudokuSolver
     naked_pairs('rows')
     naked_pairs('subgrids')
 
-
-    #pointing_pair_triple
+    # pointing_pair_triple
   end
 
   def run_advanced_strategies
@@ -68,7 +67,7 @@ class SudokuSolver
       array_zeroes = array.each_index.select { |index| array[index].zero? }
       array_zeroes.each do |zero|
         if missing_numbers(array).size == 1 &&
-          a_valid_option?(missing_numbers(array)[0], grid.send(group)[each_group].cells[zero])
+           a_valid_option?(missing_numbers(array)[0], grid.send(group)[each_group].cells[zero])
 
           grid.send(group)[each_group].cells[zero].value = missing_numbers(array)[0]
           grid.send(group)[each_group].cells[zero].candidates = []
@@ -89,6 +88,7 @@ class SudokuSolver
       (0...9).each do |cell_index|
         cell = @grid.rows[group_index].cells[cell_index]
         next if cell.candidates == []
+
         cell.candidates = cell.candidates - grid.rows[cell.row].values
         cell.candidates = cell.candidates - grid.columns[cell.column].values
         cell.candidates = cell.candidates - grid.subgrids[cell.subgrid].values
@@ -103,11 +103,11 @@ class SudokuSolver
       array << grid.send(group.to_sym)[group_index].candidates
       array.flatten!
       certain_candidate = array.detect{ |unique| array.count(unique) == 1 }
-      if !certain_candidate.nil?
+      unless certain_candidate.nil?
         (0...9).each do |cell|
           if grid.send(group)[group_index].cells[cell].candidates.find { |each| each == certain_candidate} &&
-            grid.send(group)[group_index].cells[cell].candidates.size != 9 &&
-            a_valid_option?(certain_candidate, grid.send(group)[group_index].cells[cell])
+             grid.send(group)[group_index].cells[cell].candidates.size != 9 &&
+             a_valid_option?(certain_candidate, grid.send(group)[group_index].cells[cell])
 
             grid.send(group)[group_index].cells[cell].value = certain_candidate
             grid.send(group)[group_index].cells[cell].candidates = []
@@ -121,11 +121,12 @@ class SudokuSolver
     (0...9).each do |group_index|
       group_candidates = grid.send(group)[group_index].candidates
       to_remove = group_candidates.detect{ |repeated| group_candidates.count(repeated) == repeated.size }
-      if !to_remove.nil?
+      unless to_remove.nil?
         (0...9).each do |cell_index|
           to_remove.each do |each_item_to_remove|
             if to_remove != grid.send(group)[group_index].cells[cell_index].candidates
               next if grid.send(group)[group_index].cells[cell_index].candidates == []
+
               grid.send(group)[group_index].cells[cell_index].candidates.delete(each_item_to_remove)
             end
           end
@@ -154,12 +155,14 @@ class SudokuSolver
           if pointing_indexes_rows.uniq.size == 1
             (0...9).each do |index|
               next if pointing_indexes_columns.include?(index)
+
               grid.rows[pointing_indexes_rows.first].cells[index].candidates.delete(value)
             end
           end
           if pointing_indexes_columns.uniq.size == 1
             (0...9).each do |index|
               next if pointing_indexes_rows.include?(index)
+
               grid.columns[pointing_indexes_columns.first].cells[index].candidates.delete(value)
             end
           end
@@ -184,6 +187,7 @@ class SudokuSolver
         candidates_indexes = []
         group_candidates.each_with_index do |candidate, index|
           next if candidate == []
+
           candidates_indexes << index if combinations.include?(candidate)
         end
 
@@ -191,6 +195,7 @@ class SudokuSolver
           each_candidate.flatten.uniq.each do |each_item_to_remove|
             (0...9).each do |cell_index|
               next if candidates_indexes.include?(cell_index)
+
               grid.send(group)[group_index].cells[cell_index].candidates.delete(each_item_to_remove)
             end
           end
@@ -212,10 +217,8 @@ class SudokuSolver
           xwing_possibility = value
           xwing_indexes = []
 
-          candidates.each_with_index do |value, index|
-            if value.include?(xwing_possibility)
-              xwing_indexes << index
-            end
+          candidates.each_with_index do |candidate, index|
+            xwing_indexes << index if candidate.include?(xwing_possibility)
           end
 
           ((each_row + 1)...9).each do |each_compare|
@@ -228,15 +231,14 @@ class SudokuSolver
             if candidates_compare.flatten.count(xwing_possibility) == 2
               xwing_indexes_compare = []
 
-              candidates_compare.each_with_index do |value, index|
-                if value.include?(xwing_possibility)
-                  xwing_indexes_compare << index
-                end
+              candidates_compare.each_with_index do |candidate, index|
+                xwing_indexes_compare << index if candidate.include?(xwing_possibility)
               end
 
               if xwing_indexes == xwing_indexes_compare
                 (0...9).each do |cell|
                   next if cell == each_row || cell == each_compare
+
                   grid.columns[xwing_indexes.first].cells[cell].candidates.delete(xwing_possibility)
                   grid.columns[xwing_indexes.last].cells[cell].candidates.delete(xwing_possibility)
                 end
@@ -262,10 +264,8 @@ class SudokuSolver
           xwing_indexes = []
           xwing_indexes_compare = []
 
-          column_candidates.each_with_index do |value, index|
-            if value.include?(xwing_possibility)
-              xwing_indexes << index
-            end
+          column_candidates.each_with_index do |candidate, index|
+            xwing_indexes << index if candidate.include?(xwing_possibility)
           end
 
           (0...9).each do |each|
@@ -279,10 +279,8 @@ class SudokuSolver
               end
 
               if second_column_candidates.flatten.count(xwing_possibility) == 2
-                second_column_candidates.each_with_index do |value, index|
-                  if value.include?(xwing_possibility)
-                    xwing_indexes_compare << index
-                  end
+                second_column_candidates.each_with_index do |candidate, index|
+                  xwing_indexes_compare << index if candidate.include?(xwing_possibility)
                 end
               end
 
@@ -305,13 +303,14 @@ class SudokuSolver
     return false if grid.rows[cell.row].values.include?(certain_candidate)
     return false if grid.columns[cell.column].values.include?(certain_candidate)
     return false if grid.subgrids[cell.subgrid].values.include?(certain_candidate)
+
     true
   end
 
   def progressing?
     if @last_remaining_zeros.last == remaining_zeros &&
-        @last_remaining_zeros[@last_remaining_zeros.size-2] == remaining_zeros &&
-        remaining_zeros != 0
+       @last_remaining_zeros[@last_remaining_zeros.size - 2] == remaining_zeros &&
+       remaining_zeros != 0
       puts 'Unable to solve YET'
       return false
     end
@@ -333,7 +332,7 @@ class SudokuSolver
 
   def done?
     (0...9).each do |each_row|
-      array = grid.rows[each.row].values
+      array = grid.rows[each_row].values
       return false if (array.uniq.size != array.size) && (array.sum != 45)
     end
     (0...9).each do |each_column|
