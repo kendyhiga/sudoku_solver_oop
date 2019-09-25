@@ -7,11 +7,11 @@ require_relative 'grid'
 # This is the main class, still a lot of wip
 class SudokuSolver
   attr_reader :grid
+
   def initialize(difficulty)
     read_from_csv(difficulty)
     @grid = Grid.new(@puzzles[:game])
     @last_remaining_zeros = []
-    solve
   end
 
   def read_from_csv(difficulty)
@@ -20,6 +20,18 @@ class SudokuSolver
     @difficulty = difficulty
     parsed_csv = CSV.read("lib/csvs/#{@difficulty}.csv", converters: :numeric)
     @puzzles = { game: parsed_csv }
+  end
+
+  def write_to_csv
+    CSV.open("lib/csvs/#{@difficulty}_done.csv", 'wb') do |csv|
+      (0...9).each do |each_row|
+        arr = []
+        (0...9).each do |each_cell|
+          arr << @grid.rows[each_row].cells[each_cell].value
+        end
+        csv << arr
+      end
+    end
   end
 
   def solve
@@ -33,7 +45,7 @@ class SudokuSolver
 
     end
     puts "There are #{remaining_zeros} zero(s) remaining"
-    # write_to_csv if remaining_zeros.zero?
+    write_to_csv if remaining_zeros.zero? && ENV != 'Test'
   end
 
   def run_strategies
@@ -345,19 +357,7 @@ class SudokuSolver
     end
     true
   end
-
-  def write_to_csv
-    CSV.open("lib/csvs/#{@difficulty}_done.csv", 'wb') do |csv|
-      (0...9).each do |each_row|
-        arr = []
-        (0...9).each do |each_cell|
-          arr << @grid.rows[each_row].cells[each_cell].value
-        end
-        csv << arr
-      end
-    end
-  end
 end
 
-# solved = SudokuSolver.new('hard')
+# solved = SudokuSolver.new('expert_sudoku_grid')
 # binding.pry

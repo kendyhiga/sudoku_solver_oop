@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
-require 'sudokusolver'
+require 'sudoku_solver'
+
+ENV = 'Test'
 
 describe Grid do
   test_cases = %w[ easy
@@ -13,23 +15,24 @@ describe Grid do
                    hard_sudoku_grid
                    expert_sudoku_grid ]
   test_cases.each do |test|
-    solved = SudokuSolver.new(test)
+    output = SudokuSolver.new(test)
+    output.solve
     it 'has 9 rows' do
-      expect(solved.grid.rows.size).to eq(9)
+      expect(output.grid.rows.size).to eq(9)
     end
 
     it 'has 9 columns' do
-      expect(solved.grid.columns.size).to eq(9)
+      expect(output.grid.columns.size).to eq(9)
     end
 
     it 'has 9 subgrids' do
-      expect(solved.grid.subgrids.size).to eq(9)
+      expect(output.grid.subgrids.size).to eq(9)
     end
 
     it 'only have valid numbers' do
       (0...9).each do |each_row|
         (0...9).each do |each_cell|
-          expect(solved.grid.rows[each_row].cells[each_cell].value).to be_between(1, 9)
+          expect(output.grid.rows[each_row].cells[each_cell].value).to be_between(1, 9)
         end
       end
     end
@@ -38,7 +41,7 @@ describe Grid do
       (0...9).each do |each_row|
         arr = []
         (0...9).each do |each_cell|
-          arr << solved.grid.rows[each_row].cells[each_cell].value
+          arr << output.grid.rows[each_row].cells[each_cell].value
         end
         expect(arr.uniq.size).to eq(arr.size)
       end
@@ -48,7 +51,7 @@ describe Grid do
       (0...9).each do |each_column|
         arr = []
         (0...9).each do |each_cell|
-          arr << solved.grid.columns[each_column].cells[each_cell].value
+          arr << output.grid.columns[each_column].cells[each_cell].value
         end
         expect(arr.uniq.size).to eq(arr.size)
       end
@@ -58,7 +61,7 @@ describe Grid do
       (0...9).each do |each_subgrid|
         arr = []
         (0...9).each do |each_cell|
-          arr << solved.grid.subgrids[each_subgrid].cells[each_cell].value
+          arr << output.grid.subgrids[each_subgrid].cells[each_cell].value
         end
         expect(arr.uniq.size).to eq(arr.size)
       end
