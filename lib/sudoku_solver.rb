@@ -183,6 +183,51 @@ class SudokuSolver
     end
   end
 
+  def a_valid_option?(certain_candidate, cell)
+    return false if grid.rows[cell.row].values.include?(certain_candidate)
+    return false if grid.columns[cell.column].values.include?(certain_candidate)
+    return false if grid.subgrids[cell.subgrid].values.include?(certain_candidate)
+
+    true
+  end
+
+  def progressing?
+    if @last_remaining_zeros.last == remaining_zeros &&
+       @last_remaining_zeros[@last_remaining_zeros.size - 2] == remaining_zeros &&
+       remaining_zeros != 0
+      puts 'Unable to solve YET'
+      return false
+    end
+    @last_remaining_zeros << remaining_zeros
+    true
+  end
+
+  def missing_numbers(known_numbers_array)
+    [1, 2, 3, 4, 5, 6, 7, 8, 9] - known_numbers_array
+  end
+
+  def remaining_zeros
+    (0...9).map { |row| grid.rows[row].values.count(0) }.sum
+  end
+
+  def done?
+    (0...9).each do |each_row|
+      array = grid.rows[each_row].values
+      return false if (array.uniq.size != array.size) && (array.sum != 45)
+    end
+    (0...9).each do |each_column|
+      array = grid.columns[each_column].values
+      return false if array.uniq.size != array.size && (array.sum != 45)
+    end
+    (0...9).each do |each_subgrid|
+      array = grid.subgrids[each_subgrid].values
+      return false if array.uniq.size != array.size && (array.sum != 45)
+    end
+    true
+  end
+
+# WIP: Advanced techniques
+
   def naked_triple_quadruple(group)
     (0...9).each do |group_index|
       group_candidates = []
@@ -310,54 +355,7 @@ class SudokuSolver
       end
     end
   end
-
-  def a_valid_option?(certain_candidate, cell)
-    return false if grid.rows[cell.row].values.include?(certain_candidate)
-    return false if grid.columns[cell.column].values.include?(certain_candidate)
-    return false if grid.subgrids[cell.subgrid].values.include?(certain_candidate)
-
-    true
-  end
-
-  def progressing?
-    if @last_remaining_zeros.last == remaining_zeros &&
-       @last_remaining_zeros[@last_remaining_zeros.size - 2] == remaining_zeros &&
-       remaining_zeros != 0
-      puts 'Unable to solve YET'
-      return false
-    end
-    @last_remaining_zeros << remaining_zeros
-    true
-  end
-
-  def missing_numbers(known_numbers_array)
-    [1, 2, 3, 4, 5, 6, 7, 8, 9] - known_numbers_array
-  end
-
-  def remaining_zeros
-    zero = 0
-    (0...9).each do |each_row|
-      zero += grid.rows[each_row].values.count(0)
-    end
-    zero
-  end
-
-  def done?
-    (0...9).each do |each_row|
-      array = grid.rows[each_row].values
-      return false if (array.uniq.size != array.size) && (array.sum != 45)
-    end
-    (0...9).each do |each_column|
-      array = grid.columns[each_column].values
-      return false if array.uniq.size != array.size && (array.sum != 45)
-    end
-    (0...9).each do |each_subgrid|
-      array = grid.subgrids[each_subgrid].values
-      return false if array.uniq.size != array.size && (array.sum != 45)
-    end
-    true
-  end
 end
 
-# solved = SudokuSolver.new('expert_sudoku_grid')
+# solved = SudokuSolver.new('medium')
 # binding.pry

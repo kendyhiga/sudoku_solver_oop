@@ -59,4 +59,44 @@ describe SudokuSolver do
        [1, 2, 3, 4, 5, 6, 7, 8, 9]]
     )
   end
+
+  it 'visual elimination of the already taken candidates' do
+    output = SudokuSolver.new('medium')
+
+    output.visual_elimination
+
+    expect(output.grid.rows[0].candidates).to eq(
+      [[],
+       [1, 4, 8, 9],
+       [1, 6, 9],
+       [1, 3, 4, 8],
+       [4, 8],
+       [1, 3, 4, 8, 9],
+       [1, 2, 6],
+       [],
+       [1, 2]]
+    )
+    expect(output.grid.columns[0].candidates).to eq(
+      [[],
+       [5, 9],
+       [],
+       [5, 6, 9],
+       [],
+       [],
+       [4, 5, 9],
+       [4, 5],
+       []]
+    )
+    expect(output.grid.subgrids[0].candidates).to eq(
+      [[],
+       [1, 4, 8, 9],
+       [1, 6, 9],
+       [5, 9],
+       [1, 5, 8, 9],
+       [],
+       [],
+       [1, 4, 5],
+       [1, 5, 6]]
+    )
+  end
 end
