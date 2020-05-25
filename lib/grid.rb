@@ -20,19 +20,15 @@ class Grid
   end
 
   def parse_rows
-    row_index_number = 0
-    @grid.each do |row|
-      @rows << Row.new(row, row_index_number)
-      row_index_number += 1
+    @grid.each_with_index do |row, index|
+      @rows << Row.new(row, index)
     end
   end
 
   def parse_columns
-    column_index_number = 0
-    (0...9).each do |index|
+    (0..8).each do |index|
       temp_column = @rows.map { |row| row.cells[index] }
-      @columns << Column.new(temp_column, column_index_number)
-      column_index_number += 1
+      @columns << Column.new(temp_column, index)
     end
   end
 

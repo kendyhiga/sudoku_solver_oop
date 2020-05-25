@@ -6,7 +6,7 @@ class Cell
   def initialize(value, row_index_number)
     @value = value
     @position = { row: row_index_number }
-    @candidates = @value.zero? ? [1, 2, 3, 4, 5, 6, 7, 8, 9] : []
+    @candidates = @value.zero? ? (1..9).to_a : []
   end
 
   def row

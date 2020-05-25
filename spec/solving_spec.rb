@@ -30,17 +30,17 @@ describe Grid do
     end
 
     it 'only have valid numbers' do
-      (0...9).each do |each_row|
-        (0...9).each do |each_cell|
+      (0..8).each do |each_row|
+        (0..8).each do |each_cell|
           expect(output.grid.rows[each_row].cells[each_cell].value).to be_between(1, 9)
         end
       end
     end
 
     it "doesn't have a row with a repeated number" do
-      (0...9).each do |each_row|
+      (0..8).each do |each_row|
         arr = []
-        (0...9).each do |each_cell|
+        (0..8).each do |each_cell|
           arr << output.grid.rows[each_row].cells[each_cell].value
         end
         expect(arr.uniq.size).to eq(arr.size)
@@ -48,20 +48,18 @@ describe Grid do
     end
 
     it "doesn't have a column with a repeated number" do
-      (0...9).each do |each_column|
-        arr = []
-        (0...9).each do |each_cell|
-          arr << output.grid.columns[each_column].cells[each_cell].value
+      (0..8).each do |each_column|
+        arr = (0..8).map do |each_cell|
+          output.grid.columns[each_column].cells[each_cell].value
         end
         expect(arr.uniq.size).to eq(arr.size)
       end
     end
 
     it "doesn't have a subgrid with a repeated number" do
-      (0...9).each do |each_subgrid|
-        arr = []
-        (0...9).each do |each_cell|
-          arr << output.grid.subgrids[each_subgrid].cells[each_cell].value
+      (0..8).each do |each_subgrid|
+        arr = (0..8).map do |each_cell|
+          output.grid.subgrids[each_subgrid].cells[each_cell].value
         end
         expect(arr.uniq.size).to eq(arr.size)
       end
